@@ -1,18 +1,33 @@
-'use strict';
 const express = require('express');
-const hbs = require('express-handlebars');
+const { engine } = require('express-handlebars');
+const path = require('path');
+
 const app = express();
-const port = 80;
 
-app.engine('handlebars', hbs.engine());
-app.set('view engine', 'handlebars');
-app.set('views', './views');
-app.use(express.static('public'));
+// Configuração do express-handlebars
+app.engine('hbs', engine({
+    extname: '.hbs', // Usa a extensão mais curta .hbs
+    defaultLayout: 'main', // Aponta para views/layouts/main.hbs
+    layoutsDir: path.join(__dirname, 'views/layouts'),
+    partialsDir: path.join(__dirname, 'views/partials')
+}));
 
-app.get('/', (req, res) =>{
-    res.status(200).render('home', {title: "Home Page"});
-})
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+// Servir arquivos estáticos (CSS, JS, Imagens)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Rota principal para renderizar o Dashboard
+app.get('/', (req, res) => {
+    // Aqui você pode enviar dados iniciais do backend para o frontend
+    res.render('dashboard', { 
+        hostname: 'JUP-001',
+        wan_ip: '10.100.0.3',
+        lan_ip: '192.168.1.100'
+    });
+});
+
+app.listen(80, () => {
+    console.log('JUPITER Server running on port 80');
 });
