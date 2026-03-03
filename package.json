@@ -1,0 +1,25 @@
+{
+  "name": "http-jupiter",
+  "version": "0.0.1",
+  "description": "http server for Jupiter Board",
+  "homepage": "https://github.com/suzukiin/HTTP-JUPITER#readme",
+  "bugs": {
+    "url": "https://github.com/suzukiin/HTTP-JUPITER/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suzukiin/HTTP-JUPITER.git"
+  },
+  "license": "MIT",
+  "author": "Lucas Suzuki",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "sudo /home/lucas/.nvm/versions/node/v24.12.0/bin/node app.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "express-handlebars": "^8.0.6"
+  }
+}
