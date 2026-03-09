@@ -21,6 +21,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Rota principal
 app.use('/', require('./routes/route'));
 
-app.listen(8080, () => {
-    console.log('JUPITER Server running on port 8080');
+app.listen(3000, () => {
+    console.log('JUPITER Server running on port 3000');
 });

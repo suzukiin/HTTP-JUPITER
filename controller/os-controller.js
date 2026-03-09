@@ -26,8 +26,8 @@ function getTrafficPpp0() {
         }
     }
 
-    const rxPath = '/sys/class/net/wlp0s20f3/statistics/rx_bytes';
-    const txPath = '/sys/class/net/wlp0s20f3/statistics/tx_bytes';
+    const rxPath = '/sys/class/net/ppp0/statistics/rx_bytes';
+    const txPath = '/sys/class/net/ppp0/statistics/tx_bytes';
 
     if (!fs.existsSync(rxPath) || !fs.existsSync(txPath)) {
         return trafficData; // Retorna o que tem se a interface não existir
