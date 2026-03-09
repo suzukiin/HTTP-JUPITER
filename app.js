@@ -18,16 +18,9 @@ app.set('views', path.join(__dirname, 'views'));
 // Servir arquivos estáticos (CSS, JS, Imagens)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rota principal para renderizar o Dashboard
-app.get('/', (req, res) => {
-    // Aqui você pode enviar dados iniciais do backend para o frontend
-    res.render('dashboard', { 
-        hostname: 'JUP-001',
-        wan_ip: '10.100.0.3',
-        lan_ip: '192.168.1.100'
-    });
-});
+// Rota principal
+app.use('/', require('./routes/route'));
 
-app.listen(80, () => {
-    console.log('JUPITER Server running on port 80');
+app.listen(8080, () => {
+    console.log('JUPITER Server running on port 8080');
 });

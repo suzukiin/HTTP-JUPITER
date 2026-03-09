@@ -1,0 +1,8 @@
+{
+    "location": "Curitiba-PR",
+    "client": "TV Pai Eterno",
+    "device-id": "JUP-CWB-001",
+    "WAN-IP": "10.100.0.3",
+    "LAN-IP": "192.168.1.100",
+    "version": "0.0.1"
+}

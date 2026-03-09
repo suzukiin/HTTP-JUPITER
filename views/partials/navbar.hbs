@@ -1,7 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center col-md-3 col-lg-2 me-0 px-3 fs-6" href="#">
-            <i class="bi bi-cpu-fill me-2 text-jupiter"></i>
             <span class="brand-text">JUPITER</span>
         </a>
         <button class="navbar-toggler position-absolute d-md-none collapsed border-0" type="button"
@@ -10,33 +9,31 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="d-none d-md-flex w-100 justify-content-end px-3 align-items-center text-light navbar-status">
-            <div class="me-3 text-end">
-                <div class="small text-muted">Hostname</div>
-                <div id="name-config-nav" class="text-light font-mono">{{hostname}}</div>
-            </div>
-            <div class="me-3 text-end">
+            {{#if config}}
+                <div class="me-3 text-end">
                 <div class="small text-muted">Localidade</div>
-                <div id="name-config-nav" class="text-light font-mono">Curitiba-PR</div>
+                <div id="name-config-nav" class="text-light font-mono">{{config.location}}</div>
             </div>
             <div class="me-3 text-end">
                 <div class="small text-muted">Cliente</div>
-                <div id="name-config-nav" class="text-light font-mono">Pai Eterno</div>
+                <div id="name-config-nav" class="text-light font-mono">{{config.client}}</div>
             </div>
             <div class="me-3 text-end d-none d-lg-block">
                 <div class="small text-muted">Device ID</div>
-                <div id="id-config-nav" class="text-muted small">--</div>
+                <div id="id-config-nav" class="text-muted small">{{config.[device-id]}}</div>
             </div>
             <div class="me-3 text-end d-none d-lg-block">
                 <div class="small text-muted">WAN IP</div>
-                <div id="wan-ip-config-nav" class="text-jupiter font-mono">{{wan_ip}}</div>
+                <div id="wan-ip-config-nav" class="text-jupiter font-mono">{{config.[WAN-IP]}}</div>
             </div>
 
             <div class="me-3 text-end d-none d-lg-block">
                 <div class="small text-muted">LAN IP</div>
-                <div id="la" class="text-jupiter font-mono">{{lan_ip}}</div>
+                <div id="lan-ip-config-nav" class="text-jupiter font-mono">{{config.[LAN-IP]}}</div>
             </div>
             
-            <span class="badge bg-dark border border-secondary text-secondary me-3 font-mono">v0.0.1</span>
+            <span class="badge bg-dark border border-secondary text-secondary me-3 font-mono">{{config.version}}</span>
+            {{/if}}
         </div>
     </div>
 </nav>
