@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "express": "^5.2.1",
-    "express-handlebars": "^8.0.6"
+    "express-handlebars": "^8.0.6",
+    "net-snmp": "^3.26.1"
   }
 }

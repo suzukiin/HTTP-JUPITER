@@ -58,8 +58,39 @@ window.document.addEventListener('DOMContentLoaded', () => {
         return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
     }
 
+    function getSystemStatus(){
+        const status = document.getElementById('connection-badge');
+        fetch('/os/status')
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'online'){
+                    status.classList.remove('bg-danger', 'text-danger', 'border-danger');
+                    status.classList.add('bg-success', 'text-success', 'border-success');
+                    document.getElementById('connection-dot').classList.add('status-online');
+                    document.getElementById('connection-dot').classList.remove('status-offline');
+                    document.getElementById('connection-text').textContent = 'ONLINE';
+                } else {
+                    status.classList.remove('bg-success', 'text-success', 'border-success');
+                    status.classList.add('bg-danger', 'text-danger', 'border-danger');
+                    document.getElementById('connection-dot').classList.remove('status-online');
+                    document.getElementById('connection-dot').classList.add('status-offline');
+                    document.getElementById('connection-text').textContent = 'OFFLINE';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching system status:', error);
+                status.classList.remove('bg-success', 'text-success', 'border-success');
+                status.classList.add('bg-danger', 'text-danger', 'border-danger');
+                document.getElementById('connection-dot').classList.remove('status-online');
+                document.getElementById('connection-dot').classList.add('status-offline');
+                document.getElementById('connection-text').textContent = 'OFFLINE';
+            });
+    }
+
+    getSystemStatus();
     updateUptime();
     updateTraffic();
     setInterval(updateUptime, 60000);
     setInterval(updateTraffic, 30000);
+    setInterval(getSystemStatus, 30000);
 });
