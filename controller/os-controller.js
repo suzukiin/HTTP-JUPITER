@@ -2,6 +2,12 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 
+const LOG_DIRECTORY = '/var/log';
+const LOG_FILES = {
+    init: 'init.log',
+    watchdog: 'watchdog.log'
+};
+
 function getUptime() {
     const uptimeSeconds = os.uptime();
     const hours = Math.floor(uptimeSeconds / 3600).toFixed(0);
@@ -58,7 +64,60 @@ function getTrafficPpp0() {
     return trafficData;
 }
 
+function parseLogLine(line) {
+    const match = line.match(/^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})\s-\s(.*)$/);
+
+    if (!match) {
+        return {
+            timestamp: null,
+            message: line,
+            raw: line
+        };
+    }
+
+    return {
+        timestamp: match[1],
+        message: match[2],
+        raw: line
+    };
+}
+
+function readLogFile(fileName) {
+    const filePath = path.join(LOG_DIRECTORY, fileName);
+
+    if (!fs.existsSync(filePath)) {
+        return {
+            file: fileName,
+            path: filePath,
+            exists: false,
+            lines: []
+        };
+    }
+
+    const rawContent = fs.readFileSync(filePath, 'utf8');
+    const lines = rawContent
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(parseLogLine);
+
+    return {
+        file: fileName,
+        path: filePath,
+        exists: true,
+        lines
+    };
+}
+
+function getSystemLogs() {
+    return {
+        init: readLogFile(LOG_FILES.init),
+        watchdog: readLogFile(LOG_FILES.watchdog)
+    };
+}
+
 module.exports = {
     getUptime,
-    getTrafficPpp0
+    getTrafficPpp0,
+    getSystemLogs
 };

@@ -213,6 +213,12 @@ h1.h2 {
     vertical-align: middle;
 }
 
+.logs-scroll-area {
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
 /* Progress */
 .progress {
     background-color: rgba(255, 255, 255, 0.05);

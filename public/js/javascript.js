@@ -1,5 +1,7 @@
 window.document.addEventListener('DOMContentLoaded', () => {
 
+    let lastLogsPayload = null;
+
     function escapeHtml(value) {
         if (value === null || value === undefined) return '';
         return String(value)
@@ -165,12 +167,125 @@ window.document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
+    function renderLogLines(logData) {
+        if (!logData || !Array.isArray(logData.lines) || logData.lines.length === 0) {
+            return '<div class="text-muted small">Sem registros</div>';
+        }
+
+        const linesHtml = logData.lines.map((entry) => {
+            const timestamp = entry.timestamp ? `<span class="text-secondary">${escapeHtml(entry.timestamp)}</span>` : '<span class="text-secondary">--</span>';
+            const message = escapeHtml(entry.message || '--');
+
+            return `
+                <div class="small font-mono mb-1">
+                    ${timestamp} <span class="text-light">- ${message}</span>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="logs-scroll-area">
+                ${linesHtml}
+            </div>
+        `;
+    }
+
+    function renderSystemLogs(data) {
+        const logsContainer = document.getElementById('logs-container');
+        const logsLastUpdate = document.getElementById('logs-last-update');
+
+        if (!logsContainer) {
+            return;
+        }
+
+        const initLog = data && data.init ? data.init : { lines: [] };
+        const watchdogLog = data && data.watchdog ? data.watchdog : { lines: [] };
+
+        logsContainer.innerHTML = `
+            <div class="col-md-6">
+                <div class="dash-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted text-uppercase small mb-0">init.log</h6>
+                        <span class="badge bg-dark border border-secondary text-secondary font-mono">${initLog.exists ? 'OK' : 'N/A'}</span>
+                    </div>
+                    ${renderLogLines(initLog)}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dash-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted text-uppercase small mb-0">watchdog.log</h6>
+                        <span class="badge bg-dark border border-secondary text-secondary font-mono">${watchdogLog.exists ? 'OK' : 'N/A'}</span>
+                    </div>
+                    ${renderLogLines(watchdogLog)}
+                </div>
+            </div>
+        `;
+
+        if (logsLastUpdate) {
+            logsLastUpdate.textContent = new Date().toLocaleTimeString('pt-BR');
+        }
+    }
+
+    function updateSystemLogs() {
+        fetch('/os/logs')
+            .then(response => response.json())
+            .then(data => {
+                lastLogsPayload = data;
+                renderSystemLogs(data);
+            })
+            .catch(error => {
+                console.error('Error fetching system logs:', error);
+                renderSystemLogs({
+                    init: { exists: false, lines: [] },
+                    watchdog: { exists: false, lines: [] }
+                });
+            });
+    }
+
+    window.fetchLogs = function fetchLogs() {
+        const data = lastLogsPayload;
+
+        if (!data) {
+            updateSystemLogs();
+            return;
+        }
+
+        const initLines = (data.init && Array.isArray(data.init.lines) ? data.init.lines : [])
+            .map(entry => entry.raw || '')
+            .join('\n');
+        const watchdogLines = (data.watchdog && Array.isArray(data.watchdog.lines) ? data.watchdog.lines : [])
+            .map(entry => entry.raw || '')
+            .join('\n');
+
+        const fileContent = [
+            '=== init.log ===',
+            initLines,
+            '',
+            '=== watchdog.log ===',
+            watchdogLines,
+            ''
+        ].join('\n');
+
+        const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `system-logs-${Date.now()}.log`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        URL.revokeObjectURL(url);
+    };
+
     getSystemStatus();
     updateUptime();
     updateTraffic();
     updateSnmpTelemetry();
+    updateSystemLogs();
     setInterval(updateUptime, 60000);
     setInterval(updateTraffic, 30000);
     setInterval(getSystemStatus, 30000);
     setInterval(updateSnmpTelemetry, 30000);
+    setInterval(updateSystemLogs, 30000);
 });
