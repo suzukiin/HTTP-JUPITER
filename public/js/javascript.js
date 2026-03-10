@@ -244,38 +244,27 @@ window.document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.fetchLogs = function fetchLogs() {
-        const data = lastLogsPayload;
+        fetch('/report/pdf')
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
 
-        if (!data) {
-            updateSystemLogs();
-            return;
-        }
-
-        const initLines = (data.init && Array.isArray(data.init.lines) ? data.init.lines : [])
-            .map(entry => entry.raw || '')
-            .join('\n');
-        const watchdogLines = (data.watchdog && Array.isArray(data.watchdog.lines) ? data.watchdog.lines : [])
-            .map(entry => entry.raw || '')
-            .join('\n');
-
-        const fileContent = [
-            '=== init.log ===',
-            initLines,
-            '',
-            '=== watchdog.log ===',
-            watchdogLines,
-            ''
-        ].join('\n');
-
-        const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = `system-logs-${Date.now()}.log`;
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        URL.revokeObjectURL(url);
+                return response.blob();
+            })
+            .then((blob) => {
+                const url = URL.createObjectURL(blob);
+                const anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.download = `mini-relatorio-${Date.now()}.pdf`;
+                document.body.appendChild(anchor);
+                anchor.click();
+                anchor.remove();
+                URL.revokeObjectURL(url);
+            })
+            .catch((error) => {
+                console.error('Erro ao exportar relatorio PDF:', error);
+            });
     };
 
     getSystemStatus();
