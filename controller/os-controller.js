@@ -8,6 +8,8 @@ const LOG_FILES = {
     watchdog: 'watchdog.log'
 };
 
+const VPN_INTERFACE_REGEX = /^(tun|tap|wg|ppp)\d*$/i;
+
 function getUptime() {
     const uptimeSeconds = os.uptime();
     const hours = Math.floor(uptimeSeconds / 3600).toFixed(0);
@@ -116,8 +118,46 @@ function getSystemLogs() {
     };
 }
 
+function getVpnStatus() {
+    const interfaces = os.networkInterfaces();
+    const configuredInterface = process.env.VPN_INTERFACE;
+
+    const candidates = Object.keys(interfaces).filter((interfaceName) => {
+        if (configuredInterface) {
+            return interfaceName === configuredInterface;
+        }
+
+        return VPN_INTERFACE_REGEX.test(interfaceName);
+    });
+
+    const activeVpnInterfaces = candidates.filter((interfaceName) => {
+        const addresses = interfaces[interfaceName] || [];
+
+        return addresses.some((address) => {
+            return address.family === 'IPv4' && !address.internal;
+        });
+    });
+
+    if (activeVpnInterfaces.length > 0) {
+        return {
+            status: 'online',
+            mode: configuredInterface ? 'configured-interface' : 'auto-interface-detection',
+            interface: activeVpnInterfaces[0],
+            activeInterfaces: activeVpnInterfaces
+        };
+    }
+
+    return {
+        status: 'offline',
+        mode: configuredInterface ? 'configured-interface' : 'auto-interface-detection',
+        interface: null,
+        activeInterfaces: []
+    };
+}
+
 module.exports = {
     getUptime,
     getTrafficPpp0,
-    getSystemLogs
+    getSystemLogs,
+    getVpnStatus
 };

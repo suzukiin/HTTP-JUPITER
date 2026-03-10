@@ -16,6 +16,15 @@ router.get('/os/traffic', (req, res) => {
     res.json(osController.getTrafficPpp0());
 });
 
+router.get('/os/status', (req, res) => {
+    try {
+        res.json(osController.getVpnStatus());
+    } catch (error) {
+        console.error('Error fetching VPN status:', error);
+        res.status(500).json({ status: 'offline', error: 'Failed to fetch VPN status' });
+    }
+});
+
 router.get('/os/logs', (req, res) => {
     try {
         const logs = osController.getSystemLogs();
