@@ -2,6 +2,8 @@ const snmp = require('net-snmp');
 const oidJson = require('../config/oid.json');
 
 async function getSnmpData() {
+    const results = [];
+
     for (let i = 0; i < oidJson.equipments.length; i++) {
         const equipment = oidJson.equipments[i];
 
@@ -34,27 +36,42 @@ async function getSnmpData() {
             });
         };
 
-        let results = [];
         for (let j = 0; j < oids.length; j++) {
             let data = await getOid(oids[j].oid);
+
+            if (data === null || data === undefined) {
+                results.push({
+                    equipment: equipment.model,
+                    name: oids[j].name,
+                    value: 'N/A'
+                });
+                continue;
+            }
+
             if (oids[j].type == "boolean") {
-                let enumValue = oids[j].enum[data];
+                let enumValue = oids[j].enum && oids[j].enum[data] ? oids[j].enum[data] : data;
                 results.push({
                     equipment: equipment.model,
                     name: oids[j].name,
                     value: enumValue
                 });
             } else {
+                const numericData = Number(data);
+                const maskedValue = Number.isFinite(numericData) && typeof oids[j].mask === 'number'
+                    ? numericData * oids[j].mask
+                    : data;
+
                 results.push({
                     equipment: equipment.model,
                     name: oids[j].name,
-                    value: data + (oids[j].unit ? `${oids[j].unit}` : '')
+                    value: `${maskedValue}${oids[j].unit ? `${oids[j].unit}` : ''}`
                 });
             }
         }
         session.close();
-        return results;
     }
+
+    return results;
 }
 
 module.exports = {

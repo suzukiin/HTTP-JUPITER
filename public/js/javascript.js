@@ -1,5 +1,15 @@
 window.document.addEventListener('DOMContentLoaded', () => {
 
+    function escapeHtml(value) {
+        if (value === null || value === undefined) return '';
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     function updateUptime() {
         const uptimeElement = document.getElementById('uptime');
         if (uptimeElement) {
@@ -87,10 +97,80 @@ window.document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
+    function renderSnmpTelemetry(data) {
+        const telemetryContainer = document.getElementById('telemetry-container');
+        const lastUpdateElement = document.getElementById('telemetry-last-update');
+
+        if (!telemetryContainer) {
+            return;
+        }
+
+        if (!Array.isArray(data) || data.length === 0) {
+            telemetryContainer.innerHTML = `
+                <div class="col-12 text-center text-muted py-5">
+                    Nenhum dado SNMP disponível
+                </div>
+            `;
+
+            if (lastUpdateElement) {
+                lastUpdateElement.textContent = '--';
+            }
+
+            return;
+        }
+
+        const rows = data.map((item) => `
+            <tr>
+                <td class="text-muted">${escapeHtml(item.equipment || '--')}</td>
+                <td>${escapeHtml(item.name || '--')}</td>
+                <td class="text-light">${escapeHtml(item.value || '--')}</td>
+            </tr>
+        `).join('');
+
+        telemetryContainer.innerHTML = `
+            <div class="col-12">
+                <div class="dash-card">
+                    <div class="table-responsive">
+                        <table class="table table-custom table-sm mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Equipamento</th>
+                                    <th>Métrica</th>
+                                    <th>Valor SNMP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (lastUpdateElement) {
+            lastUpdateElement.textContent = new Date().toLocaleTimeString('pt-BR');
+        }
+    }
+
+    function updateSnmpTelemetry() {
+        fetch('/snmp')
+            .then(response => response.json())
+            .then(data => {
+                renderSnmpTelemetry(data);
+            })
+            .catch(error => {
+                console.error('Error fetching SNMP telemetry:', error);
+                renderSnmpTelemetry([]);
+            });
+    }
+
     getSystemStatus();
     updateUptime();
     updateTraffic();
+    updateSnmpTelemetry();
     setInterval(updateUptime, 60000);
     setInterval(updateTraffic, 30000);
     setInterval(getSystemStatus, 30000);
+    setInterval(updateSnmpTelemetry, 30000);
 });

@@ -16,7 +16,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "sudo /home/lucas/.nvm/versions/node/v24.12.0/bin/node app.js"
+    "start": "node app.js"
   },
   "dependencies": {
     "express": "^5.2.1",
