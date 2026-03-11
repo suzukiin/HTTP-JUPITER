@@ -38,8 +38,8 @@ router.get('/os/logs', (req, res) => {
 
 router.get('/snmp', async (req, res) => {
     try {
-        const snmpData = await snmpController.getSnmpData();
-        res.json(snmpData);
+        const result = await snmpController.getSnmpDataAndPublish();
+        res.json(result.data);
     } catch (error) {
         console.error('Error fetching SNMP data:', error);
         res.status(500).json({ error: 'Failed to fetch SNMP data' });

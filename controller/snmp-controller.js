@@ -1,5 +1,45 @@
 const snmp = require('net-snmp');
 const oidJson = require('../config/oid.json');
+const mqttController = require('./mqtt-controller');
+
+function sanitizeTopicSegment(value) {
+    return String(value || 'unknown')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, '_');
+}
+
+async function publishSnmpData(results) {
+    const topicPrefix = process.env.MQTT_TOPIC_PREFIX || 'jupiter/snmp';
+    let publishedCount = 0;
+    let failedCount = 0;
+
+    for (const item of results) {
+        const equipment = sanitizeTopicSegment(item.equipment);
+        const metric = sanitizeTopicSegment(item.name);
+        const topic = `${topicPrefix}/${equipment}/${metric}`;
+
+        const payload = {
+            timestamp: new Date().toISOString(),
+            equipment: item.equipment,
+            metric: item.name,
+            value: item.value
+        };
+
+        const response = await mqttController.publish(topic, payload);
+        if (response.published) {
+            publishedCount += 1;
+        } else {
+            failedCount += 1;
+        }
+    }
+
+    return {
+        publishedCount,
+        failedCount,
+        total: results.length
+    };
+}
 
 async function getSnmpData() {
     const results = [];
@@ -74,6 +114,17 @@ async function getSnmpData() {
     return results;
 }
 
+async function getSnmpDataAndPublish() {
+    const data = await getSnmpData();
+    const mqtt = await publishSnmpData(data);
+
+    return {
+        data,
+        mqtt
+    };
+}
+
 module.exports = {
-    getSnmpData
+    getSnmpData,
+    getSnmpDataAndPublish
 };
