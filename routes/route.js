@@ -3,7 +3,6 @@ const router = express.Router();
 const configController = require('../controller/config-controller');
 const osController = require('../controller/os-controller');
 const snmpController = require('../controller/snmp-controller');
-const reportController = require('../controller/report-controller');
 
 router.get('/', (req, res) => {
     res.render('dashboard', { config: configController.getInfo() });
@@ -38,23 +37,14 @@ router.get('/os/logs', (req, res) => {
 
 router.get('/snmp', async (req, res) => {
     try {
-        const result = await snmpController.getSnmpDataAndPublish();
-        res.json(result.data);
+        const result = await snmpController.getSnmpData();
+        res.json(result);
     } catch (error) {
         console.error('Error fetching SNMP data:', error);
         res.status(500).json({ error: 'Failed to fetch SNMP data' });
     }
 });
 
-router.get('/report/pdf', async (req, res) => {
-    try {
-        await reportController.createPdfReport(res);
-    } catch (error) {
-        console.error('Error generating PDF report:', error);
-        if (!res.headersSent) {
-            res.status(500).json({ error: 'Failed to generate report' });
-        }
-    }
-});
+
 
 module.exports = router;
